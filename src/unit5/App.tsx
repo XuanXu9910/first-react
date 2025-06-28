@@ -2,7 +2,7 @@ import React from "react";
 
 // Class component 與 useState() 搭配寫法
 
-// 1. props state
+// 1. props 與 state
 // 2. 生命週期
 
 type BtnProps = {
@@ -12,11 +12,9 @@ type BtnProps = {
 type BtnState = {};
 
 class Btn extends React.Component<BtnProps, BtnState> {
-  constructor(props: BtnProps) {
-    super(props);
-  }
+  // 不需要自己處理 state 或綁定 this，可以不用寫 constructor。
 
-  // 組件將要被解安裝時: number;
+  // 組件將要被解安裝時
   componentWillUnmount(): void {
     console.log("Btn unmount");
   }
@@ -37,8 +35,9 @@ type AppState = {
 };
 
 class App extends React.Component<AppProps, AppState> {
+  // 需要初始化 state 或綁定 this 時，就需要 constructor。
   constructor(props: AppProps) {
-    super(props);
+    super(props); // 一定要呼叫 super()
     this.state = {
       num: 1,
     };

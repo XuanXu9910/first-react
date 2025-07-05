@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-// 使用 useEffect() 搭配 API 呼叫
+// 自定義 Hook
 
 type Comment = {
   postId: number;
@@ -10,10 +10,11 @@ type Comment = {
   body: string;
 };
 
-const App: React.FC = () => {
+function useFetchAPI() {
   const [postId, setPostId] = useState<number | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<Comment[]>([]);
 
   useEffect(() => {
     if (postId !== null) {
@@ -28,14 +29,21 @@ const App: React.FC = () => {
       const res = await fetch(
         `https://jsonplaceholder.typicode.com/comments?postId=${id}`
       );
-      const data = (await res.json()) as Comment[];
-      console.log("data", data);
+      const resData = (await res.json()) as Comment[];
+      setData(resData);
     } catch (error) {
       setError(error as Error);
     }
 
     setLoading(false);
   }
+
+  return [data, loading, error, setPostId] as const;
+  // return {data, loading, error, setPostId}
+}
+
+const App: React.FC = () => {
+  const [data, loading, error, setPostId] = useFetchAPI();
 
   const clickHandler = (id: number) => {
     setPostId(id);
@@ -52,6 +60,11 @@ const App: React.FC = () => {
         <p style={{ color: "red" }}>資料獲取失敗</p>
       )}
       {loading ? <p>loading</p> : null}
+      <p>結果：</p>
+      {data.length > 0 &&
+        data.map((item, index) => {
+          return <p key={item.id}>{item.email}</p>;
+        })}
     </>
   );
 };

@@ -1,50 +1,51 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-// Functional component 與 useState() 搭配寫法
-
-// 作為泛型，須宣告組件的 Props 的資料型態
-type BtnProps = {
-  currentNum: number;
-  onClickHandler: () => void;
-};
-
-// currentNum 是 Props: 用來將父組件之參數傳遞給子組件
-const Btn: React.FC<BtnProps> = ({ currentNum, onClickHandler }) => {
-  // let currentNum = 1;
-  // function counter() {
-  //   currentNum = currentNum + 1;
-  //   console.log(currentNum);
-  // }
-
-  return (
-    // <button onClick={counter}>
-    //   加1，
-    //   <span>目前的總數: {currentNum}</span>
-    // </button>
-
-    <button onClick={onClickHandler}>
-      加1，
-      <span>目前的總數: {currentNum}</span>
-    </button>
-  );
-};
+// useEffect() 常用情況
 
 const App: React.FC = () => {
-  // const num = 0; // 改用 useState() 取代
+  // 1. 模擬類似 mount 效果(function component 無法像 class component 寫 componentDidMount())
+  // useEffect(callback function, dependency array)
+  // dependency array 為空 代表在在第一次渲染後執行 callback function
+  useEffect(() => {
+    console.log("hello");
+  }, []);
 
-  // useState(): 用來使變數改變值時，重新渲染畫面
-  const [num, setNum] = useState(1);
+  // 2. 建立某些 state 之間之橋樑
+  const [counter, setCounter] = useState(0);
+  const [text, setText] = useState("偶數");
 
-  function counter() {
-    setNum(num + 1);
-  }
+  // 錯誤寫法： state 改變，導致 component 一直重複渲染，無窮迴圈
+  //   console.log("text", text);
+  //   if (counter % 2 === 0) {
+  //     setText("偶數");
+  //   } else {
+  //     setText("奇數");
+  //   }
+
+  // dependency array 為 counter， 代表監控 counter 變化，有變化時執行 callback function
+  // re-render 時，不影響 useEffect() 裡包住的東西
+  useEffect(() => {
+    console.log("counter變化", counter);
+    if (counter % 2 === 0) {
+      setText("偶數");
+    } else {
+      setText("奇數");
+    }
+  }, [counter]);
+
+  const handleClick = () => {
+    setCounter(counter + 1);
+  };
 
   return (
     <>
-      <h1>計數器:{num}</h1>
-      <Btn currentNum={num} onClickHandler={counter} />
+      <h1>count: {counter}</h1>
+      <button onClick={handleClick}>+1</button>
+      <p>{text}</p>
     </>
   );
 };
 
 export default App;
+
+// 補充說明:預設情況下（開發時，且有 <React.StrictMode>），這兩個 useEffect 都會被執行兩次

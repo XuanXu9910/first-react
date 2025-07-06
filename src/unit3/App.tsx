@@ -1,74 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 
-// 1. useState() 基本用法
+// useMemo useCallback 使用方法
 
-// 使用 state 使得 function component 變成 stateful
-// const App: React.FC = () => {
-//   const [counter, setCounter] = useState(0);
+const App: React.FC = () => {
+  console.log("render");
 
-//   function counterHandler() {
-//     setCounter(counter + 1);
-//   }
+  const [value, setValue] = useState(false);
 
-//   return (
-//     <>
-//       <h1>Counter: {counter}</h1>
-//       <button onClick={counterHandler}>+1</button>
-//     </>
-//   );
-// };
+  // 物件、陣列、函式是以址傳遞，如放入 useEffect 之 dependency array，即使不換實際值，useEffect 仍會執行
+  let num = 10;
+  let object: object = {};
+  let array: number[] = [];
+  let fuc = () => {};
 
-// export default App;
+  // useMemo(): 將值放入 callback function 並 return 後，即可記憶實際值，以實際值作為比較
+  // dependency array 同樣控管何時觸發
+  const memoObj = useMemo(() => {
+    let mObject: object = {};
+    return mObject;
+  }, []);
 
-// 2. state 的 batch update: react 會依照情況選擇須不需要立即 re-render
-// event bubble: child component 之事件觸發後，會觸發 parent component 之事件
-// child clicked 後 -> child onClick 觸發 -> child state 改變 -> (child 不會 re-render） -> parent onClick 觸發 -> parent state 改變 -> 整體-re-render
+  const memoArray = useMemo(() => {
+    let mArray: number[] = [];
+    return mArray;
+  }, []);
 
-// const Parent: React.FC = () => {
-//   let [count, setCount] = useState(0);
-//   return (
-//     <div onClick={() => setCount((prev) => prev + 1)}>
-//       Parent clicked {count} times
-//       <Child />
-//     </div>
-//   );
-// };
+  // 如果是用在 function，會在 callback function 內再放 function
+  const memoFunc1 = useMemo(() => {
+    let mFunc = () => {};
+    return mFunc;
+  }, []);
+  // 此時建議使用 useCallback() ， 可直接將function 放入第一個參數位置
+  const memoFunc2 = useCallback(function () {}, []);
 
-// const Child: React.FC = () => {
-//   let [count, setCount] = useState(0);
-//   return (
-//     <button onClick={() => setCount(count + 1)}>
-//       Child clicked {count} times
-//     </button>
-//   );
-// };
-
-// export default Parent;
-
-// 3. state 安全寫法: 使用 callback function
-const Counter: React.FC = () => {
-  const [counter, setCounter] = useState(0);
-
-  const handleClick = () => {
-    function cb(prev: number) {
-      return prev + 1;
-    }
-    setCounter(cb);
-    setCounter(cb);
-
-    // 錯誤寫法: counter 會皆抓到同個前次 state (0)
-    // setCounter(counter + 1);
-    // setCounter(counter + 1);
-  };
+  // 嘗試替換 num, object, array, fuc, memoObj, memoArray, memoFunc1, memoFunc2 至 dependency array
+  useEffect(() => {
+    console.log("useEffect callback");
+  }, [memoFunc2]);
 
   return (
-    <div className="App">
-      <h1>Counter 組件</h1>
-      <div>counter: {counter}</div>
-      <br />
-      <button onClick={handleClick}>Click me</button>
-    </div>
+    <>
+      <h1>APP</h1>
+      <button
+        onClick={() => {
+          setValue((prev) => !prev);
+        }}
+      >
+        重新render
+      </button>
+    </>
   );
 };
 
-export default Counter;
+export default App;

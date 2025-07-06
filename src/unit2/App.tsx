@@ -1,66 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { BtnProvider, useBtnContext } from "./context/BtnContext";
 
-// 使用 React Hook 取代複雜的 HOC 寫法
+// 使用 context 在 component 間傳遞參數
 
-// --------------------------------------------------------
-// 模擬取得分數的API
-
-function getCurrentScore() {
-  return 100;
-}
-
-function getScoreByBoardName(boardName: String) {
-  if (boardName === "boardA") {
-    return 200;
-  }
-  if (boardName === "boardB") {
-    return 1000;
-  }
-  return 0;
-}
-
-// --------------------------------------------------------
-// 自定義的 hook
-// 須遵守以 useXXX 為開頭的命名
-function useGetTotalScore(boardName: String) {
-  // 不能在使用 hook 時，在其程式邏輯中添加如條件式導致最後每次 hook 渲染順序不一樣
-
-  const [score, setScore] = useState(0);
-  useEffect(() => {
-    const currentScore = getCurrentScore() + getScoreByBoardName(boardName);
-    setScore(currentScore);
-  }, []);
-  return score;
-}
-
-// --------------------------------------------------------
-
-const ScoreBoardB: React.FC = () => {
-  //   const [score, setScore] = useState(0);
-  //   useEffect(() => {
-  //     const currentScore = getCurrentScore() + getScoreByBoardName("boardB");
-  //     setScore(currentScore);
-  //   }, []);
-  const score = useGetTotalScore("boardB");
-  return <p>B Total Score: {score}</p>;
+const D: React.FC = () => {
+  const data = useBtnContext();
+  console.log("btnVisible D", data.btnVisible);
+  return <button>D按鈕</button>;
 };
 
-const ScoreBoardA: React.FC = () => {
-  //   const [score, setScore] = useState(0);
-  //   useEffect(() => {
-  //     const currentScore = getCurrentScore() + getScoreByBoardName("boardA");
-  //     setScore(currentScore);
-  //   }, []);
-  const score = useGetTotalScore("boardA");
-  return <p>A Total Score: {score}</p>;
+const C: React.FC = () => {
+  return (
+    <>
+      <p>C 組件</p>
+      <D />
+    </>
+  );
+};
+
+const B: React.FC = () => {
+  return (
+    <>
+      <p>B 組件</p>
+      <C />
+    </>
+  );
 };
 
 const App: React.FC = () => {
   return (
-    <>
-      <ScoreBoardA />
-      <ScoreBoardB />
-    </>
+    // 使用 BtnProvider 包裹住要傳遞參數的起始 component
+    // 實際上是將 children component 傳遞至 BtnContext.Provider 中
+    <BtnProvider>
+      <h1>APP</h1>
+      <B />
+    </BtnProvider>
   );
 };
 

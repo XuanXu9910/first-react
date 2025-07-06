@@ -1,51 +1,63 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useMemo, memo } from "react";
 
-// useEffect() 常用情況
+// memo 使用方式
+
+type PropsB = {
+  num: number;
+  obj: { name: string };
+};
+
+// 在 component 中使用 memo
+// 其參數中的物件的所有變數會分別獨立判斷是否有變化
+// 如有變化才重新渲染該 component
+// 不受 父component 影響
+const B: React.FC<PropsB> = memo(({ num, obj }) => {
+  console.log("render B", num);
+  return (
+    <p>
+      B {num} {obj.name}
+    </p>
+  );
+});
 
 const App: React.FC = () => {
-  // 1. 模擬類似 mount 效果(function component 無法像 class component 寫 componentDidMount())
-  // useEffect(callback function, dependency array)
-  // dependency array 為空 代表在在第一次渲染後執行 callback function
-  useEffect(() => {
-    console.log("hello");
-  }, []);
+  console.log("render APP");
+  const [value, setValue] = useState(false);
+  const [num, setNum] = useState(0);
+  const [obj, setObj] = useState({ name: "" });
 
-  // 2. 建立某些 state 之間之橋樑
-  const [counter, setCounter] = useState(0);
-  const [text, setText] = useState("偶數");
-
-  // 錯誤寫法： state 改變，導致 component 一直重複渲染，無窮迴圈
-  //   console.log("text", text);
-  //   if (counter % 2 === 0) {
-  //     setText("偶數");
-  //   } else {
-  //     setText("奇數");
-  //   }
-
-  // dependency array 為 counter， 代表監控 counter 變化，有變化時執行 callback function
-  // re-render 時，不影響 useEffect() 裡包住的東西
-  useEffect(() => {
-    console.log("counter變化", counter);
-    if (counter % 2 === 0) {
-      setText("偶數");
-    } else {
-      setText("奇數");
-    }
-  }, [counter]);
-
-  const handleClick = () => {
-    setCounter(counter + 1);
-  };
+  // 當 obj.name 有變化時，才重新回傳新的物件，以觸發 memo component 的 re-render
+  const memoObj = useMemo(() => {
+    return obj;
+  }, [obj.name]);
 
   return (
     <>
-      <h1>count: {counter}</h1>
-      <button onClick={handleClick}>+1</button>
-      <p>{text}</p>
+      <h1>APP</h1>
+      <B num={num} obj={memoObj} />
+      <button
+        onClick={() => {
+          setValue(!value);
+        }}
+      >
+        重新render
+      </button>
+      <button
+        onClick={() => {
+          setNum(100);
+        }}
+      >
+        設定顯示的數字
+      </button>
+      <button
+        onClick={() => {
+          setObj({ name: "Alan" });
+        }}
+      >
+        設定顯示的名字
+      </button>
     </>
   );
 };
 
 export default App;
-
-// 補充說明:預設情況下（開發時，且有 <React.StrictMode>），這兩個 useEffect 都會被執行兩次
